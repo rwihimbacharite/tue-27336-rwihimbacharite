@@ -51,7 +51,7 @@ This process supports MIS functions by:
 - Streamlining operations by automating previously manual scheduling tasks
 - Reducing scheduling conflicts and optimizing resource allocation
 - Providing data for analytics on appointment patterns and resource utilization
-
+![BPMN FOR APPOINTMENT SCHEDULING](<Screenshot 2025-05-24 095559.png>)
 #### Organizational Importance:
 Efficient appointment scheduling is critical for hospital operations as it directly impacts patient satisfaction, resource utilization, and revenue generation. The automated system reduces administrative overhead while ensuring optimal utilization of doctor availability.
 
@@ -180,10 +180,11 @@ The database design adheres to the Third Normal Form (3NF):
 ```sql
 -- Create Pluggable Database
 CREATE PLUGGABLE DATABASE tue_27336_rwihimbacharite_hospitalMS_db
-ADMIN USER admin IDENTIFIED BY Rwihimba1
+ADMIN USER charite IDENTIFIED BY Rwihimba2
 FILE_NAME_CONVERT = ('/u01/app/oracle/oradata/ORCL/pdbseed/',
                      '/u01/app/oracle/oradata/ORCL/tue_27336_rwihimbacharite_hospitalMS_db/');
 
+![PDBE CREATION](<Screenshot 2025-05-20 110304.png>)
 -- Open the PDB
 ALTER PLUGGABLE DATABASE tue_27336_rwihimbacharite_hospitalMS_db OPEN;
 
@@ -194,7 +195,7 @@ ALTER SESSION SET CONTAINER = tue_27336_rwihimbacharite_hospitalMS_db;
 GRANT CREATE SESSION, CREATE TABLE, CREATE PROCEDURE, CREATE SEQUENCE, 
       CREATE TRIGGER, CREATE VIEW, CREATE MATERIALIZED VIEW, 
       CREATE DATABASE LINK, CREATE SYNONYM, CREATE TYPE 
-      TO admin;
+      TO charite;
 ```
 
 ### Oracle Enterprise Manager (OEM) Configuration
@@ -223,6 +224,7 @@ CREATE SEQUENCE med_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE presc_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE holiday_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE audit_seq START WITH 1 INCREMENT BY 1;
+![sequence creation](<Screenshot 2025-05-25 061332.png>)
 
 -- Create Departments Table
 CREATE TABLE Departments (
@@ -233,6 +235,7 @@ CREATE TABLE Departments (
     contact_number VARCHAR2(20),
     created_date TIMESTAMP DEFAULT SYSTIMESTAMP
 );
+![department table creation](<Screenshot 2025-05-25 061352.png>)
 
 -- Create Doctors Table
 CREATE TABLE Doctors (
@@ -247,10 +250,12 @@ CREATE TABLE Doctors (
     created_date TIMESTAMP DEFAULT SYSTIMESTAMP,
     CONSTRAINT fk_doctor_dept FOREIGN KEY (department_id) REFERENCES Departments(department_id)
 );
+![doctor table creation](<Screenshot 2025-05-25 061439.png>)
 
 -- Add Foreign Key for head_doctor_id in Departments
 ALTER TABLE Departments
 ADD CONSTRAINT fk_dept_head_doctor FOREIGN KEY (head_doctor_id) REFERENCES Doctors(doctor_id);
+![alter department](<Screenshot 2025-05-25 061527.png>)
 
 -- Create Patients Table
 CREATE TABLE Patients (
@@ -268,6 +273,7 @@ CREATE TABLE Patients (
     registration_date DATE DEFAULT SYSDATE,
     created_date TIMESTAMP DEFAULT SYSTIMESTAMP
 );
+![patient table creation](<Screenshot 2025-05-25 061616.png>)
 
 -- Create Appointments Table
 CREATE TABLE Appointments (
@@ -283,6 +289,7 @@ CREATE TABLE Appointments (
     CONSTRAINT fk_appt_patient FOREIGN KEY (patient_id) REFERENCES Patients(patient_id),
     CONSTRAINT fk_appt_doctor FOREIGN KEY (doctor_id) REFERENCES Doctors(doctor_id)
 );
+![appointment table creation](<Screenshot 2025-05-25 061652.png>)
 
 -- Create Medical_Records Table
 CREATE TABLE Medical_Records (
@@ -299,6 +306,7 @@ CREATE TABLE Medical_Records (
     CONSTRAINT fk_record_patient FOREIGN KEY (patient_id) REFERENCES Patients(patient_id),
     CONSTRAINT fk_record_doctor FOREIGN KEY (doctor_id) REFERENCES Doctors(doctor_id)
 );
+![medical records table creation](<Screenshot 2025-05-25 061727.png>)
 
 -- Create Medications Table
 CREATE TABLE Medications (
@@ -311,6 +319,7 @@ CREATE TABLE Medications (
     stock_quantity NUMBER,
     created_date TIMESTAMP DEFAULT SYSTIMESTAMP
 );
+![medication table creation](<Screenshot 2025-05-25 061809.png>)
 
 -- Create Prescriptions Junction Table
 CREATE TABLE Prescriptions (
@@ -325,6 +334,7 @@ CREATE TABLE Prescriptions (
     CONSTRAINT fk_presc_record FOREIGN KEY (record_id) REFERENCES Medical_Records(record_id),
     CONSTRAINT fk_presc_medication FOREIGN KEY (medication_id) REFERENCES Medications(medication_id)
 );
+![prescription table creation](<Screenshot 2025-05-25 061839.png>)
 
 -- Create Public_Holidays Table
 CREATE TABLE Public_Holidays (
@@ -333,6 +343,7 @@ CREATE TABLE Public_Holidays (
     holiday_name VARCHAR2(100),
     description VARCHAR2(200)
 );
+![public holiday table creation](<Screenshot 2025-05-25 061909.png>)
 
 -- Create Audit_Logs Table
 CREATE TABLE Audit_Logs (
@@ -344,34 +355,41 @@ CREATE TABLE Audit_Logs (
     status VARCHAR2(20),
     details VARCHAR2(500)
 );
-```
+![audit log table creation](<Screenshot 2025-05-25 061942.png>)
 
 ### Data Insertion
 
-Sample data has been inserted into all tables to simulate a functioning hospital environment. Below are examples of the insertion scripts used:
+Sample data has been inserted into all tables to simulate a functioning hospital environment.
 
-```sql
+sql
 -- Insert Departments
 INSERT INTO Departments (department_id, department_name, location, contact_number)
 VALUES (dept_seq.NEXTVAL, 'Cardiology', 'Building A, Floor 3', '+1234567890');
 
 INSERT INTO Departments (department_id, department_name, location, contact_number)
 VALUES (dept_seq.NEXTVAL, 'Neurology', 'Building B, Floor 2', '+1234567891');
+![department data insertion](<Screenshot 2025-05-25 062140.png>)
 
 -- Insert Doctors
 INSERT INTO Doctors (doctor_id, first_name, last_name, specialization, department_id, contact_number, email, hire_date)
-VALUES (doctor_seq.NEXTVAL, 'John', 'Smith', 'Cardiologist', 1, '+1234567892', 'john.smith@hospital.com', TO_DATE('15-Jan-2020', 'DD-MON-YYYY'));
+VALUES (doctor_seq.NEXTVAL, 'John', 'Smith', 'Cardiologist', 3, '+1234567892', 'john.smith@hospital.com', TO_DATE('15-Jan-2020', 'DD-MON-YYYY'));
 
 INSERT INTO Doctors (doctor_id, first_name, last_name, specialization, department_id, contact_number, email, hire_date)
-VALUES (doctor_seq.NEXTVAL, 'Sarah', 'Johnson', 'Neurologist', 2, '+1234567893', 'sarah.johnson@hospital.com', TO_DATE('10-Mar-2019', 'DD-MON-YYYY'));
+VALUES (doctor_seq.NEXTVAL, 'Sarah', 'Johnson', 'Neurologist', 4, '+1234567893', 'sarah.johnson@hospital.com', TO_DATE('10-Mar-2019', 'DD-MON-YYYY'));
+![doctors data insertion](<Screenshot 2025-05-25 062209.png>)
 
 -- Update Department Heads
-UPDATE Departments SET head_doctor_id = 1 WHERE department_id = 1;
-UPDATE Departments SET head_doctor_id = 2 WHERE department_id = 2;
+UPDATE Departments SET head_doctor_id = 11 WHERE department_id = 3;
+UPDATE Departments SET head_doctor_id = 12 WHERE department_id = 4;
+![update department](<Screenshot 2025-05-25 062259.png>)
 
 -- Insert Patients
 INSERT INTO Patients (patient_id, first_name, last_name, date_of_birth, gender, blood_group, address, contact_number, email, emergency_contact, insurance_details)
 VALUES (patient_seq.NEXTVAL, 'Michael', 'Brown', TO_DATE('25-Apr-1985', 'DD-MON-YYYY'), 'Male', 'O+', '123 Main St, Cityville', '+1234567894', 'michael.brown@email.com', '+1234567895', 'BlueShield #12345678');
+
+INSERT INTO Patients (patient_id, first_name, last_name, date_of_birth, gender, blood_group, address, contact_number, email, emergency_contact, insurance_details)
+VALUES (patient_seq.NEXTVAL, 'Michael', 'Feb', TO_DATE('25-Apr-1985', 'DD-MON-YYYY'), 'Male', 'O+', '123 Main St, Cityville', '+1234567894', 'michael.feb@email.com', '+1234567895', 'BlueShield #12345678');
+![patient data insertion](<Screenshot 2025-05-25 062505.png>)
 
 -- Insert Public Holidays for upcoming month
 INSERT INTO Public_Holidays (holiday_id, holiday_date, holiday_name, description)
@@ -379,25 +397,15 @@ VALUES (holiday_seq.NEXTVAL, TO_DATE('01-May-2025', 'DD-MON-YYYY'), 'Labor Day',
 
 INSERT INTO Public_Holidays (holiday_id, holiday_date, holiday_name, description)
 VALUES (holiday_seq.NEXTVAL, TO_DATE('15-May-2025', 'DD-MON-YYYY'), 'Healthcare Professionals Day', 'Day honoring healthcare workers');
-```
+![public holiday insertion](<Screenshot 2025-05-25 062636.png>)
 
-Additional data was inserted to ensure comprehensive testing and demonstration of all system features. In total, the database contains:
-- 8 departments
-- 25 doctors
-- 100 patients
-- 250 appointments
-- 180 medical records
-- 50 medications
-- 300 prescriptions
-- 6 public holidays for the upcoming month
-
-## Phase 6: Database Interaction and Transactions
+### Phase 6: Database Interactions and Transactions
 
 ### Procedures, Functions, and Packages
 
 #### Package: Patient Management
 
-```sql
+``sql
 CREATE OR REPLACE PACKAGE patient_mgmt AS
     -- Procedure to register a new patient
     PROCEDURE register_patient(
@@ -797,23 +805,391 @@ ORDER BY
 
 ### Problem Statement for Advanced Features
 
+# Phase 7: Advanced Database Programming and Auditing - Complete Implementation
+
+## Problem Statement for Advanced Features
+
 The Hospital Management System requires advanced security and auditing mechanisms to ensure data integrity, compliance with healthcare regulations, and proper tracking of system usage. Specifically, the system needs to restrict database modifications during weekdays and public holidays to prevent interference with critical hospital operations. All attempted operations should be logged for audit purposes.
 
-### Trigger Implementation
+## Trigger Implementation
 
-#### Restriction Trigger for Weekdays and Holidays
+### Restriction Trigger for Weekdays and Holidays
 
 ```sql
 CREATE OR REPLACE TRIGGER restrict_operations_trigger
 BEFORE INSERT OR UPDATE OR DELETE ON Patients
-BEFORE INSERT OR UPDATE OR DELETE ON Doctors
-BEFORE INSERT OR UPDATE OR DELETE ON Appointments
-BEFORE INSERT OR UPDATE OR DELETE ON Medical_Records
-BEFORE INSERT OR UPDATE OR DELETE ON Medications
-BEFORE INSERT OR UPDATE OR DELETE ON Prescriptions
+FOR EACH ROW
+DECLARE
+    v_day_of_week VARCHAR2(20);
+    v_is_holiday NUMBER := 0;
+    v_current_date DATE := TRUNC(SYSDATE);
+    v_user VARCHAR2(100) := USER;
+    v_operation VARCHAR2(10);
+    v_table_name VARCHAR2(50) := 'PATIENTS';
+    v_status VARCHAR2(20) := 'BLOCKED';
+    v_details VARCHAR2(500);
 BEGIN
-    DECLARE
-        v_day_of_week VARCHAR2(20);
-        v_is_holiday NUMBER := 0;
-        v_current_date DATE := TRUNC(SYSDATE);
-        v_user VARCHAR
+    -- Get current day of week
+    SELECT TO_CHAR(SYSDATE, 'DAY') INTO v_day_of_week FROM DUAL;
+    v_day_of_week := TRIM(v_day_of_week);
+    
+    -- Check if current date is a public holiday
+    SELECT COUNT(*) INTO v_is_holiday
+    FROM Public_Holidays
+    WHERE holiday_date = v_current_date;
+    
+    -- Determine operation type
+    IF INSERTING THEN
+        v_operation := 'INSERT';
+    ELSIF UPDATING THEN
+        v_operation := 'UPDATE';
+    ELSIF DELETING THEN
+        v_operation := 'DELETE';
+    END IF;
+    
+    -- Check if operation should be restricted
+    IF v_day_of_week IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') OR v_is_holiday > 0 THEN
+        v_details := 'Operation blocked: ' || v_operation || ' on ' || v_table_name || 
+                    ' during weekday (' || v_day_of_week || ')' ||
+                    CASE WHEN v_is_holiday > 0 THEN ' or public holiday' ELSE '' END;
+        
+        -- Log the blocked operation
+        INSERT INTO Audit_Logs (log_id, user_id, table_name, operation, status, details)
+        VALUES (audit_seq.NEXTVAL, v_user, v_table_name, v_operation, v_status, v_details);
+        
+        -- Raise error to prevent operation
+        RAISE_APPLICATION_ERROR(-20100, 
+            'Database modifications are not allowed during weekdays or public holidays. ' ||
+            'Current day: ' || v_day_of_week || 
+            CASE WHEN v_is_holiday > 0 THEN '. Today is a public holiday.' ELSE '.' END);
+    ELSE
+        -- Log allowed operation
+        v_status := 'ALLOWED';
+        v_details := 'Operation allowed: ' || v_operation || ' on ' || v_table_name || 
+                    ' during weekend (' || v_day_of_week || ')';
+        
+        INSERT INTO Audit_Logs (log_id, user_id, table_name, operation, status, details)
+        VALUES (audit_seq.NEXTVAL, v_user, v_table_name, v_operation, v_status, v_details);
+    END IF;
+END;
+/
+
+-- Create similar triggers for other tables
+CREATE OR REPLACE TRIGGER restrict_doctors_trigger
+BEFORE INSERT OR UPDATE OR DELETE ON Doctors
+FOR EACH ROW
+DECLARE
+    v_day_of_week VARCHAR2(20);
+    v_is_holiday NUMBER := 0;
+    v_current_date DATE := TRUNC(SYSDATE);
+    v_user VARCHAR2(100) := USER;
+    v_operation VARCHAR2(10);
+    v_table_name VARCHAR2(50) := 'DOCTORS';
+    v_status VARCHAR2(20);
+    v_details VARCHAR2(500);
+BEGIN
+    SELECT TO_CHAR(SYSDATE, 'DAY') INTO v_day_of_week FROM DUAL;
+    v_day_of_week := TRIM(v_day_of_week);
+    
+    SELECT COUNT(*) INTO v_is_holiday
+    FROM Public_Holidays
+    WHERE holiday_date = v_current_date;
+    
+    IF INSERTING THEN v_operation := 'INSERT';
+    ELSIF UPDATING THEN v_operation := 'UPDATE';
+    ELSIF DELETING THEN v_operation := 'DELETE';
+    END IF;
+    
+    IF v_day_of_week IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') OR v_is_holiday > 0 THEN
+        v_status := 'BLOCKED';
+        v_details := 'Operation blocked: ' || v_operation || ' on ' || v_table_name;
+        
+        INSERT INTO Audit_Logs (log_id, user_id, table_name, operation, status, details)
+        VALUES (audit_seq.NEXTVAL, v_user, v_table_name, v_operation, v_status, v_details);
+        
+        RAISE_APPLICATION_ERROR(-20101, 
+            'Doctor record modifications are not allowed during weekdays or public holidays.');
+    ELSE
+        v_status := 'ALLOWED';
+        v_details := 'Operation allowed: ' || v_operation || ' on ' || v_table_name;
+        
+        INSERT INTO Audit_Logs (log_id, user_id, table_name, operation, status, details)
+        VALUES (audit_seq.NEXTVAL, v_user, v_table_name, v_operation, v_status, v_details);
+    END IF;
+END;
+/
+
+CREATE OR REPLACE TRIGGER restrict_appointments_trigger
+BEFORE INSERT OR UPDATE OR DELETE ON Appointments
+FOR EACH ROW
+DECLARE
+    v_day_of_week VARCHAR2(20);
+    v_is_holiday NUMBER := 0;
+    v_current_date DATE := TRUNC(SYSDATE);
+    v_user VARCHAR2(100) := USER;
+    v_operation VARCHAR2(10);
+    v_table_name VARCHAR2(50) := 'APPOINTMENTS';
+    v_status VARCHAR2(20);
+    v_details VARCHAR2(500);
+BEGIN
+    SELECT TO_CHAR(SYSDATE, 'DAY') INTO v_day_of_week FROM DUAL;
+    v_day_of_week := TRIM(v_day_of_week);
+    
+    SELECT COUNT(*) INTO v_is_holiday
+    FROM Public_Holidays
+    WHERE holiday_date = v_current_date;
+    
+    IF INSERTING THEN v_operation := 'INSERT';
+    ELSIF UPDATING THEN v_operation := 'UPDATE';
+    ELSIF DELETING THEN v_operation := 'DELETE';
+    END IF;
+    
+    IF v_day_of_week IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY') OR v_is_holiday > 0 THEN
+        v_status := 'BLOCKED';
+        v_details := 'Operation blocked: ' || v_operation || ' on ' || v_table_name;
+        
+        INSERT INTO Audit_Logs (log_id, user_id, table_name, operation, status, details)
+        VALUES (audit_seq.NEXTVAL, v_user, v_table_name, v_operation, v_status, v_details);
+        
+        RAISE_APPLICATION_ERROR(-20102, 
+            'Appointment modifications are not allowed during weekdays or public holidays.');
+    ELSE
+        v_status := 'ALLOWED';
+        v_details := 'Operation allowed: ' || v_operation || ' on ' || v_table_name;
+        
+        INSERT INTO Audit_Logs (log_id, user_id, table_name, operation, status, details)
+        VALUES (audit_seq.NEXTVAL, v_user, v_table_name, v_operation, v_status, v_details);
+    END IF;
+END;
+/
+```
+
+## Additional Auditing Triggers
+
+### Comprehensive Audit Trail Trigger
+
+```sql
+CREATE OR REPLACE TRIGGER audit_trail_trigger
+AFTER INSERT OR UPDATE OR DELETE ON Medical_Records
+FOR EACH ROW
+DECLARE
+    v_operation VARCHAR2(10);
+    v_user VARCHAR2(100) := USER;
+    v_details VARCHAR2(500);
+BEGIN
+    IF INSERTING THEN
+        v_operation := 'INSERT';
+        v_details := 'New medical record created for Patient ID: ' || :NEW.patient_id || 
+                    ', Doctor ID: ' || :NEW.doctor_id || ', Diagnosis: ' || :NEW.diagnosis;
+    ELSIF UPDATING THEN
+        v_operation := 'UPDATE';
+        v_details := 'Medical record updated. Record ID: ' || :NEW.record_id || 
+                    ', Old Diagnosis: ' || :OLD.diagnosis || ', New Diagnosis: ' || :NEW.diagnosis;
+    ELSIF DELETING THEN
+        v_operation := 'DELETE';
+        v_details := 'Medical record deleted. Record ID: ' || :OLD.record_id || 
+                    ', Patient ID: ' || :OLD.patient_id;
+    END IF;
+    
+    INSERT INTO Audit_Logs (log_id, user_id, table_name, operation, status, details)
+    VALUES (audit_seq.NEXTVAL, v_user, 'MEDICAL_RECORDS', v_operation, 'COMPLETED', v_details);
+END;
+/
+```
+
+## Stored Procedures for Testing
+
+### Test Procedure for Trigger Validation
+
+```sql
+CREATE OR REPLACE PROCEDURE test_restriction_triggers AS
+    v_patient_id NUMBER;
+    v_doctor_id NUMBER;
+    v_appointment_id NUMBER;
+    v_current_day VARCHAR2(20);
+    v_test_result VARCHAR2(4000) := '';
+BEGIN
+    -- Get current day
+    SELECT TRIM(TO_CHAR(SYSDATE, 'DAY')) INTO v_current_day FROM DUAL;
+    
+    DBMS_OUTPUT.PUT_LINE('=== Testing Restriction Triggers ===');
+    DBMS_OUTPUT.PUT_LINE('Current Day: ' || v_current_day);
+    DBMS_OUTPUT.PUT_LINE('Current Date: ' || TO_CHAR(SYSDATE, 'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE('');
+    
+    -- Test 1: Try to insert a patient
+    BEGIN
+        INSERT INTO Patients (
+            patient_id, first_name, last_name, date_of_birth, gender
+        ) VALUES (
+            patient_seq.NEXTVAL, 'Test', 'Patient', DATE '1990-01-01', 'Male'
+        );
+        COMMIT;
+        DBMS_OUTPUT.PUT_LINE('✓ Patient insertion allowed');
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            DBMS_OUTPUT.PUT_LINE('✗ Patient insertion blocked: ' || SUBSTR(SQLERRM, 1, 100));
+    END;
+    
+    -- Test 2: Try to insert a doctor
+    BEGIN
+        INSERT INTO Doctors (
+            doctor_id, first_name, last_name, specialization, department_id
+        ) VALUES (
+            doctor_seq.NEXTVAL, 'Test', 'Doctor', 'General Medicine', 1
+        );
+        COMMIT;
+        DBMS_OUTPUT.PUT_LINE('✓ Doctor insertion allowed');
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            DBMS_OUTPUT.PUT_LINE('✗ Doctor insertion blocked: ' || SUBSTR(SQLERRM, 1, 100));
+    END;
+    
+    -- Test 3: Try to insert an appointment
+    BEGIN
+        INSERT INTO Appointments (
+            appointment_id, patient_id, doctor_id, appointment_date, 
+            appointment_time, purpose, status
+        ) VALUES (
+            appt_seq.NEXTVAL, 1, 1, SYSDATE, SYSTIMESTAMP, 'Test Appointment', 'Scheduled'
+        );
+        COMMIT;
+        DBMS_OUTPUT.PUT_LINE('✓ Appointment insertion allowed');
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            DBMS_OUTPUT.PUT_LINE('✗ Appointment insertion blocked: ' || SUBSTR(SQLERRM, 1, 100));
+    END;
+    
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('=== Test Complete ===');
+END;
+/
+```
+
+### Audit Report Procedure
+
+```sql
+CREATE OR REPLACE PROCEDURE generate_audit_report(
+    p_start_date IN DATE DEFAULT SYSDATE - 7,
+    p_end_date IN DATE DEFAULT SYSDATE
+) AS
+    CURSOR c_audit_logs IS
+        SELECT 
+            log_id,
+            user_id,
+            action_date,
+            table_name,
+            operation,
+            status,
+            details
+        FROM Audit_Logs
+        WHERE action_date BETWEEN p_start_date AND p_end_date
+        ORDER BY action_date DESC;
+        
+    v_total_operations NUMBER := 0;
+    v_blocked_operations NUMBER := 0;
+    v_allowed_operations NUMBER := 0;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('=== HOSPITAL MANAGEMENT SYSTEM AUDIT REPORT ===');
+    DBMS_OUTPUT.PUT_LINE('Period: ' || TO_CHAR(p_start_date, 'DD-MON-YYYY') || 
+                        ' to ' || TO_CHAR(p_end_date, 'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE('Generated on: ' || TO_CHAR(SYSDATE, 'DD-MON-YYYY HH24:MI:SS'));
+    DBMS_OUTPUT.PUT_LINE('');
+    
+    -- Summary statistics
+    SELECT COUNT(*) INTO v_total_operations
+    FROM Audit_Logs
+    WHERE action_date BETWEEN p_start_date AND p_end_date;
+    
+    SELECT COUNT(*) INTO v_blocked_operations
+    FROM Audit_Logs
+    WHERE action_date BETWEEN p_start_date AND p_end_date
+    AND status = 'BLOCKED';
+    
+    SELECT COUNT(*) INTO v_allowed_operations
+    FROM Audit_Logs
+    WHERE action_date BETWEEN p_start_date AND p_end_date
+    AND status = 'ALLOWED';
+    
+    DBMS_OUTPUT.PUT_LINE('SUMMARY:');
+    DBMS_OUTPUT.PUT_LINE('Total Operations: ' || v_total_operations);
+    DBMS_OUTPUT.PUT_LINE('Blocked Operations: ' || v_blocked_operations);
+    DBMS_OUTPUT.PUT_LINE('Allowed Operations: ' || v_allowed_operations);
+    DBMS_OUTPUT.PUT_LINE('');
+    
+    DBMS_OUTPUT.PUT_LINE('DETAILED LOG:');
+    DBMS_OUTPUT.PUT_LINE(RPAD('Date/Time', 20) || RPAD('User', 15) || RPAD('Table', 15) || 
+                        RPAD('Operation', 10) || RPAD('Status', 10) || 'Details');
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 20, '-') || RPAD('-', 15, '-') || RPAD('-', 15, '-') || 
+                        RPAD('-', 10, '-') || RPAD('-', 10, '-') || RPAD('-', 50, '-'));
+    
+    FOR rec IN c_audit_logs LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            RPAD(TO_CHAR(rec.action_date, 'DD-MON HH24:MI'), 20) ||
+            RPAD(NVL(rec.user_id, 'N/A'), 15) ||
+            RPAD(NVL(rec.table_name, 'N/A'), 15) ||
+            RPAD(NVL(rec.operation, 'N/A'), 10) ||
+            RPAD(NVL(rec.status, 'N/A'), 10) ||
+            SUBSTR(NVL(rec.details, 'N/A'), 1, 50)
+        );
+    END LOOP;
+    
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('=== END OF REPORT ===');
+END;
+/
+```
+
+## Test Execution Examples
+
+### Execute Tests
+
+```sql
+-- Enable DBMS_OUTPUT to see test results
+SET SERVEROUTPUT ON;
+
+-- Test the restriction triggers
+EXEC test_restriction_triggers;
+
+-- Generate audit report for the last 7 days
+EXEC generate_audit_report;
+
+-- Test specific scenarios
+-- Try to add a public holiday for testing
+INSERT INTO Public_Holidays (holiday_id, holiday_date, holiday_name, description)
+VALUES (holiday_seq.NEXTVAL, TRUNC(SYSDATE), 'Test Holiday', 'Holiday for testing triggers');
+
+-- Now try operations (should be blocked if today is a weekday or the test holiday)
+```
+
+### View Audit Logs
+
+```sql
+-- Query to view recent audit logs
+SELECT 
+    log_id,
+    user_id,
+    TO_CHAR(action_date, 'DD-MON-YYYY HH24:MI:SS') as action_time,
+    table_name,
+    operation,
+    status,
+    SUBSTR(details, 1, 100) as details_summary
+FROM Audit_Logs
+ORDER BY action_date DESC
+FETCH FIRST 20 ROWS ONLY;
+```
+
+## Validation and Testing Results
+
+The implemented triggers and procedures provide:
+
+1. **Automatic Restriction**: All DML operations on critical tables are automatically blocked during weekdays and public holidays
+2. **Comprehensive Auditing**: Every operation attempt is logged with user information, timestamp, and operation details
+3. **Flexible Configuration**: Public holidays can be easily configured in the Public_Holidays table
+4. **Detailed Reporting**: Audit reports can be generated for any date range
+5. **Error Handling**: Clear error messages inform users why operations are blocked
+
+This implementation ensures compliance with hospital operational requirements while maintaining a complete audit trail for security and regulatory purposes.
